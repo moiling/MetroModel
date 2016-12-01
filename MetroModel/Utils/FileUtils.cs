@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
-
+using System.Text;
 
 namespace FindV.MetroModel.Utils
 {
@@ -15,15 +15,15 @@ namespace FindV.MetroModel.Utils
             return ReadV(fileUrl, null);
         }
 
-        public static V ReadV(string fileUrl, IErrorCallback callback)
+        public static V ReadV(string fileUrl, OnErrorDelegate onError)
         {
             if (!File.Exists(fileUrl)) // File isn't exist.
             {
-                if (callback != null)
-                    callback.OnError(ErrorInfoManager.FILE_NOT_EXIST.Code, ErrorInfoManager.FILE_NOT_EXIST.Info);
+                onError?.Invoke(ErrorInfoManager.FILE_NOT_EXIST.Code, ErrorInfoManager.FILE_NOT_EXIST.Info);
                 return null;
             }
-            string file = ReadFile(fileUrl, callback);
+            string file = ReadFile(fileUrl, onError);
+            Debug.WriteLine(file);
             try
             {
                 V metro = JsonConvert.DeserializeObject<V>(file);
@@ -32,15 +32,14 @@ namespace FindV.MetroModel.Utils
             catch (Exception e) // File isn't a valid json.
             {
                 Debug.WriteLine(e);
-                if (callback != null)
-                    callback.OnError(ErrorInfoManager.JSON_NOT_VAILD.Code, ErrorInfoManager.JSON_NOT_VAILD.Info);
+                onError?.Invoke(ErrorInfoManager.JSON_NOT_VAILD.Code, ErrorInfoManager.JSON_NOT_VAILD.Info);
             }
             return null;
         }
 
-        private static string ReadFile(string fileUrl, IErrorCallback callback)
+        private static string ReadFile(string fileUrl, OnErrorDelegate onError)
         {
-            StreamReader sr = new StreamReader(fileUrl, System.Text.Encoding.Default);
+            StreamReader sr = new StreamReader(fileUrl, Encoding.UTF8);
             string result = sr.ReadToEnd();
             sr.Close();
             return result;
