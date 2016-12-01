@@ -10,13 +10,15 @@ namespace FindV.MetroModel
     public class MetroModel
     {
         public List<MetroLine> MetroLines;
+        public string Name;
 
-        public MetroModel(List<MetroLine> lines)
+        public MetroModel(List<MetroLine> lines, string name)
         {
             this.MetroLines = lines;
+            this.Name = name;
         }
 
-        public MetroModel(V v) : this(new UIDataAdapter(v).GetMetroLines()) { }
+        public MetroModel(V v, string name) : this(new UIDataAdapter(v).GetMetroLines(), name) { }
 
         /// <summary>
         /// 获取两点之间的最短路径 (站点数组)
@@ -53,6 +55,7 @@ namespace FindV.MetroModel
         {
             private MetroModel _model;
             private string _fileUrl;
+            private string _name;
             private OnErrorDelegate _onError;
 
             /// <summary>
@@ -63,6 +66,17 @@ namespace FindV.MetroModel
             public Builder From(string fileUrl)
             {
                 this._fileUrl = fileUrl;
+                return this;
+            }
+
+            /// <summary>
+            /// 设置城市名字
+            /// </summary>
+            /// <param name="name">城市名字</param>
+            /// <returns>构造器本身</returns>
+            public Builder Name(string name)
+            {
+                this._name = name;
                 return this;
             }
 
@@ -93,7 +107,7 @@ namespace FindV.MetroModel
                 if ((v = FileUtils.ReadV(_fileUrl, _onError)) == null)
                     return null;
                 // v to metroLines.
-                _model = new MetroModel(new UIDataAdapter(v).GetMetroLines());
+                _model = new MetroModel(new UIDataAdapter(v).GetMetroLines(), _name);
                 return _model;
             }
 
