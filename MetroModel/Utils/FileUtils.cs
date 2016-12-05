@@ -8,7 +8,7 @@ using System.Text;
 
 namespace FindV.MetroModel.Utils
 {
-    public class FileUtils
+    class FileUtils
     {
         public static V ReadV(string fileUrl)
         {

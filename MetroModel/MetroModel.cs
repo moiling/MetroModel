@@ -4,21 +4,37 @@ using FindV.MetroModel.Bean.Json;
 using FindV.MetroModel.Error;
 using FindV.MetroModel.Utils;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FindV.MetroModel
 {
     public class MetroModel
     {
         public List<MetroLine> MetroLines;
+        public List<Station> Stations;
         public string Name;
 
-        public MetroModel(List<MetroLine> lines, string name)
+        MetroModel(List<MetroLine> lines, List<Station> stations, string name)
         {
             this.MetroLines = lines;
+            this.Stations = stations;
             this.Name = name;
         }
 
-        public MetroModel(V v, string name) : this(new UIDataAdapter(v).GetMetroLines(), name) { }
+        MetroModel(V v, string name) : this(new UIDataAdapter(v).GetMetroLines(),
+            new UIDataAdapter(v).GetAllStations(), name) { }
+
+        /// <summary>
+        /// 获取所有换乘点
+        /// </summary>
+        /// <returns>所有换乘点</returns>
+        public List<Station> GetAllTransferStations()
+        {
+            List<Station> result = new List<Station>();
+            foreach (MetroLine l in MetroLines)
+                result = result.Union(l.GetTransferStations()).ToList<Station>();
+            return result;
+        }
 
         /// <summary>
         /// 获取两点之间的最短路径 (站点数组)
@@ -28,7 +44,7 @@ namespace FindV.MetroModel
         /// <returns>最短路径所经过的所有站点</returns>
         public List<Station> ShortestPath(int start, int end)
         {
-            return MetroLines[0].Stations;
+            return new Thinker(this).ThinkShortestPath(start, end);
         }
 
         /// <summary>
@@ -38,7 +54,12 @@ namespace FindV.MetroModel
         /// <returns>转换完成的站点字符串</returns>
         public string Stations2Str(List<Station> stations)
         {
-            return "一号线-A->B-转二号线->C";
+            string result = "";
+            foreach (Station s in stations)
+            {
+                result += s.Name + ", ";
+            }
+            return result;
         }
 
         /// <summary>
@@ -107,7 +128,8 @@ namespace FindV.MetroModel
                 if ((v = FileUtils.ReadV(_fileUrl, _onError)) == null)
                     return null;
                 // v to metroLines.
-                _model = new MetroModel(new UIDataAdapter(v).GetMetroLines(), _name);
+                _model = new MetroModel(new UIDataAdapter(v).GetMetroLines(),
+                     new UIDataAdapter(v).GetAllStations(), _name);
                 return _model;
             }
 

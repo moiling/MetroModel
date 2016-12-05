@@ -55,6 +55,7 @@
     <Compile Include="Error\ErrorInfo.cs" />
     <Compile Include="MetroModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Thinker.cs" />
     <Compile Include="Utils\FileUtils.cs" />
   </ItemGroup>
   <ItemGroup>

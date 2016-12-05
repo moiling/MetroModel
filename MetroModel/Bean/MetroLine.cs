@@ -16,5 +16,19 @@ namespace FindV.MetroModel.Bean
             this.Color = color;
             this.Stations = stations;
         }
+
+        /// <summary>
+        /// 得到这条线路上所有换乘点
+        /// </summary>
+        /// <returns>换乘点数组</returns>
+        public List<Station> GetTransferStations()
+        {
+            List<Station> result = new List<Station>();
+            if (Stations != null)
+                foreach (Station s in Stations)            
+                    if (s.IsTransfer)
+                        result.Add(s);
+            return result;
+        }
     }
 }

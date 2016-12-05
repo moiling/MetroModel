@@ -8,9 +8,26 @@ namespace FindV.MetroModel.Adapter
     {
         public V v;
 
-        public UIDataAdapter(V v)
+        public UIDataAdapter(V v) { this.v = v; }
+
+        public List<Station> GetAllStations()
         {
-            this.v = v;
+            if (v == null) return null;
+
+            List<Station> stations = new List<Station>();
+
+            foreach (Point p in v.point)
+                stations.Add(new Station(p.id, p.name, p.x, p.y));
+
+            // Station Id small to large order -> I want 'stations[id]'. Yeah!
+            stations.Sort((Station a, Station b) => { return a.Id >= b.Id ? 1 : -1; });
+
+            // Stations was been compared! Complete stations infos.
+            foreach (Line l in v.line)
+                foreach (int i in l.path)
+                    stations[i].PassLineIds.Add(l.id);
+
+            return stations;
         }
 
         public List<MetroLine> GetMetroLines()
@@ -18,17 +35,7 @@ namespace FindV.MetroModel.Adapter
             if (v == null) return null;
 
             List<MetroLine> metroLines = new List<MetroLine>();
-            List<Station> stations = new List<Station>();
-
-            foreach (Point p in v.point)
-                stations.Add(new Station(p.id, p.name, p.x, p.y));
-
-            stations.Sort(CompareStationById);
-
-            // Stations was been compared! Complete stations infos.
-            foreach (Line l in v.line) 
-                foreach (int i in l.path)
-                    stations[i].PassLineIds.Add(l.id);
+            List<Station> stations = GetAllStations();
 
             // Add completed stations to lines.
             foreach (Line l in v.line)
@@ -43,19 +50,5 @@ namespace FindV.MetroModel.Adapter
 
             return metroLines;
         }
-
-        // Station Id small to large order -> I want 'stations[id]'. Yeah!
-        private int CompareStationById(Station a, Station b)
-        {
-            if (a.Id >= b.Id)
-            {
-                return 1;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-
     }
 }
