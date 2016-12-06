@@ -23,12 +23,12 @@ namespace FindV.MetroModel
         public List<Station> ThinkShortestPath(int startId, int endId)
         {
             // [0] is the shortest path.
-            return ThinkAllPath(startId, endId)[0];
+            return ThinkAllPath(startId, endId)[0].Stations;
         }
 
-        public List<List<Station>> ThinkAllPath(int startId, int endId)
+        public List<Path> ThinkAllPath(int startId, int endId)
         {
-            List<List<Station>> result = new List<List<Station>>();
+            List<Path> result = new List<Path>();
             Station startStation = _metro.Stations.Find((Station s) => { return s.Id == startId; });
             Station endStation = _metro.Stations.Find((Station s) => { return s.Id == endId; });
 
@@ -39,22 +39,30 @@ namespace FindV.MetroModel
             foreach (int i in startPassLines)
                 foreach (int j in endPassLines)
                    FindPath(result, i, j, startStation, endStation, null, null);
+            // 排序 站数越少越前，若相等->换乘越少越前
+            result.Sort((Path a, Path b) => {
+                if (a.Stations.Count > b.Stations.Count)
+                    return 1;
+                else if (a.Stations.Count < b.Stations.Count)
+                    return -1;
+                else if (a.PassedLines.Count >= b.PassedLines.Count)
+                    return 1;
+                else return -1;
+            });
 
-            result.Sort((List<Station> a, List<Station> b) => { return a.Count >= b.Count ? 1 : -1; });
-
-            foreach (List<Station> ss in result)
+            foreach (Path ss in result)
             {
                 Debug.WriteLine("\n结果：");
-                foreach (Station s in ss)
+                foreach (Station s in ss.Stations)
                 {
                     Debug.Write(s.Name + "->");
                 }
             }
-            
+
             return result;
         }
 
-        private void FindPath(List<List<Station>> result, int startLine, int endLine, Station startStation, Station endStation,
+        private void FindPath(List<Path> result, int startLine, int endLine, Station startStation, Station endStation,
             List<Station> list, List<int> alreadyPassLines)
         {
             if (alreadyPassLines == null)
@@ -74,18 +82,20 @@ namespace FindV.MetroModel
                     foreach (Station s in temp)
                         list.Add(s);
                 list.Add(endStation);
-                result.Add(list);
+                result.Add(new Path(list, alreadyPassLines));
             }
 
             // 还没在同一条路线上，寻找下一个换乘点
             alreadyPassLines.Add(startLine); // 当前路算已走过了，不要再回来了
+            
             MetroLine line = _metro.MetroLines.Find((MetroLine l) => { return l.Id == startLine; });
 
             foreach (Station s in line.GetTransferStations())
                 foreach (int i in s.PassLineIds)
                     if (!alreadyPassLines.Contains(i))
                     {
-                        List<Station> path;
+                        Debug.Write("\n搜路： 当前线->" + line.Name + "，去的换乘点id->" + s.Name + "，换成线路->" + i);
+                        List <Station> path;
                         List<Station> temp = GetPathBetween(startStation, s, startLine);
                         // 因为每个循环都会用到之前的list，所以这里不能更改list，传变量path
                         if (list == null) // 为null表示第一次，直接赋值
@@ -98,7 +108,10 @@ namespace FindV.MetroModel
                             foreach (Station st in temp)
                                 path.Add(st);
                         }
-                        FindPath(result, i, endLine, s, endStation, path, alreadyPassLines); // 递归查找子路径
+                        List<int> tempAlreadyLines = new List<int>();
+                        foreach (int j in alreadyPassLines)
+                            tempAlreadyLines.Add(j);
+                        FindPath(result, i, endLine, s, endStation, path, tempAlreadyLines); // 递归查找子路径
                     }
         }
 
@@ -125,6 +138,18 @@ namespace FindV.MetroModel
                 Debug.Write(s.Name + "->");
             }
             return result;
+        }
+
+        public class Path
+        {
+            public List<Station> Stations;
+            public List<int> PassedLines;
+
+            public Path(List<Station> stations, List<int> passedLines)
+            {
+                this.Stations = stations;
+                this.PassedLines = passedLines;
+            }
         }
     }
 }
