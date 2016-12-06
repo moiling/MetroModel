@@ -55,9 +55,33 @@ namespace FindV.MetroModel
         public string Stations2Str(List<Station> stations)
         {
             string result = "";
-            foreach (Station s in stations)
+            int currentLine = -1;
+            for (int i = 0; i < stations.Count; i++)
             {
-                result += s.Name + ", ";
+                result += stations[i].Name;
+                if (i == stations.Count - 1)
+                    break;
+
+                if (stations[i].IsTransfer)
+                {
+                    int startLine = -1, endLine = -1;
+                    for (int j = i; j > 0; j--)
+                        if (!stations[j].IsTransfer)
+                        {
+                            startLine = stations[j].PassLineIds[0];
+                            break;
+                        }
+                    for (int j = i; j < stations.Count; j++)
+                        if (!stations[j].IsTransfer)
+                        {
+                            endLine = stations[j].PassLineIds[0];
+                            break;
+                        }
+                    if (startLine != -1 && endLine != -1 && startLine != endLine && currentLine != endLine)
+                        result += " [换乘" + MetroLines.Find((MetroLine l) => l.Id == endLine).Name + "]";
+                    currentLine = endLine;
+                }
+                result += "→";
             }
             return result;
         }
