@@ -12,13 +12,15 @@ namespace FindV.MetroModel
     {
         public List<MetroLine> MetroLines;
         public List<Station> Stations;
-        public string Name;
+        public string Name { get; set; }
+        private Thinker _thinker;
 
         MetroModel(List<MetroLine> lines, List<Station> stations, string name)
         {
             this.MetroLines = lines;
             this.Stations = stations;
             this.Name = name;
+            this._thinker = new Thinker(this); // Only one thinker.
         }
 
         MetroModel(V v, string name) : this(new UIDataAdapter(v).GetMetroLines(),
@@ -44,7 +46,19 @@ namespace FindV.MetroModel
         /// <returns>最短路径所经过的所有站点</returns>
         public List<Station> ShortestPath(int start, int end)
         {
-            return new Thinker(this).ThinkShortestPath(start, end);
+            return ShortestPath(start, end, 0);
+        }
+
+        /// <summary>
+        /// 获取两点之间的最短路径 (站点数组)，算上换乘浪费的时间
+        /// </summary>
+        /// <param name="start">起点的id</param>
+        /// <param name="end">终点的id</param>
+        /// <param name="transferTime">换乘浪费的时间（相当于几站）</param>
+        /// <returns>最短路径所经过的所有站点</returns>
+        public List<Station> ShortestPath(int start, int end, int transferTime)
+        {
+            return _thinker.ThinkShortestPath(start, end, transferTime);
         }
 
         /// <summary>
@@ -56,6 +70,9 @@ namespace FindV.MetroModel
         {
             string result = "";
             int currentLine = -1;
+            if (stations == null)
+                return result;
+
             for (int i = 0; i < stations.Count; i++)
             {
                 result += stations[i].Name;
@@ -93,7 +110,18 @@ namespace FindV.MetroModel
         /// <returns>整个遍历过程经过的站点数组</returns>
         public List<Station> GoThrough(int start)
         {
-            return MetroLines[0].Stations;
+            return GoThrough(start, 0);
+        }
+
+        /// <summary>
+        /// 最佳遍历，算上换乘浪费的时间
+        /// </summary>
+        /// <param name="start">起点站id</param>
+        /// <param name="transferTime">换乘浪费的时间（相当于几站）</param>
+        /// <returns>整个遍历过程经过的站点数组</returns>
+        public List<Station> GoThrough(int start, int transferTime)
+        {
+            return _thinker.ThinkGoThrough(start, transferTime);
         }
 
         public class Builder
