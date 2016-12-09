@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace FindV.MetroModel.Adapter
 {
-    public class UIDataAdapter
+    public class DataAdapter
     {
         public V v;
 
-        public UIDataAdapter(V v) { this.v = v; }
+        public DataAdapter(V v) { this.v = v; }
 
         public List<Station> GetAllStations()
         {

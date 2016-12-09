@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Adapter\UIDataAdapter.cs" />
+    <Compile Include="Adapter\DataAdapter.cs" />
     <Compile Include="Bean\Json\Line.cs" />
     <Compile Include="Bean\Json\Point.cs" />
     <Compile Include="Bean\MetroLine.cs" />

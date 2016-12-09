@@ -23,8 +23,8 @@ namespace FindV.MetroModel
             this._thinker = new Thinker(this); // Only one thinker.
         }
 
-        MetroModel(V v, string name) : this(new UIDataAdapter(v).GetMetroLines(),
-            new UIDataAdapter(v).GetAllStations(), name) { }
+        MetroModel(V v, string name) : this(new DataAdapter(v).GetMetroLines(),
+            new DataAdapter(v).GetAllStations(), name) { }
 
         /// <summary>
         /// 获取所有换乘点
@@ -180,8 +180,8 @@ namespace FindV.MetroModel
                 if ((v = FileUtils.ReadV(_fileUrl, _onError)) == null)
                     return null;
                 // v to metroLines.
-                _model = new MetroModel(new UIDataAdapter(v).GetMetroLines(),
-                     new UIDataAdapter(v).GetAllStations(), _name);
+                _model = new MetroModel(new DataAdapter(v).GetMetroLines(),
+                     new DataAdapter(v).GetAllStations(), _name);
                 return _model;
             }
 
